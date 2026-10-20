@@ -11,6 +11,7 @@ struct MarketState
 	std::int64_t yes_share_units = 0;
 	std::int64_t no_share_units = 0;
 	std::int64_t liquidity_units = 100'000;
+	std::int64_t credits_per_share = 1;
 };
 
 double cost(const MarketState& market);
@@ -20,7 +21,7 @@ double price(const MarketState& market, Outcome outcome);
 std::int64_t quote_buy(
 	const MarketState& market, 
 	Outcome outcome, 
-	std::int64_t quantity
+	std::int64_t quantity_units
 );
 
 }

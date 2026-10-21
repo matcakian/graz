@@ -14,6 +14,8 @@ private:
 
 	double liquidity;
 
+	static std::int64_t to_credit_units(double raw_credits, double (*f)(double));
+
 public:
 	static constexpr int64_t UNITS_PER_SHARE = 1000;
 	static constexpr int64_t UNITS_PER_CREDIT = 1000;
@@ -22,7 +24,7 @@ public:
 	explicit LMSR(double liquidity);
 	LMSR();
 
-	double price(Outcome outcome) const;
+	int64_t price(Outcome outcome) const;
 	double cost(std::int64_t y_units, std::int64_t n_units) const;
 	double cost() const;
 	std::int64_t quote_buy(Outcome outcome, std::int64_t share_units) const;

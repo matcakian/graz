@@ -18,5 +18,21 @@ namespace lmsr {
 
 		LMSR() : LMSR(DEFAULT_LIQUIDITY) {}
 
+		double price(Outcome outcome) const {
+			double q_y = static_cast<double>(yes_share_units) / UNITS_PER_SHARE;
+			double q_n = static_cast<double>(no_share_units) / UNITS_PER_SHARE;
+
+			double x = (q_y - q_n) / liquidity;
+			double p_y;
+
+			if (std::isgreater(x, 0.0)) {
+				p_y = 1.0 / (1.0 + std::exp(-x));
+			} else {
+				p_y = std::exp(x) / (std::exp(x) + 1.0);
+			}
+
+			if (outcome == Outcome::Yes) return p_y;
+			else return 1 - p_y;
+		}
 	};
 }

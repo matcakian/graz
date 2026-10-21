@@ -34,14 +34,18 @@ namespace lmsr {
 		else return 1 - p_y;
 	}
 
-	double LMSR::cost() const {
-		double q_y = static_cast<double>(yes_share_units) / UNITS_PER_SHARE;
-		double q_n = static_cast<double>(no_share_units) / UNITS_PER_SHARE;
+	double LMSR::cost(std::int64_t y_units, std::int64_t n_units) const {
+		double q_y = static_cast<double>(y_units) / UNITS_PER_SHARE;
+		double q_n = static_cast<double>(n_units) / UNITS_PER_SHARE;
 
 		double x = -std::abs(q_y - q_n) / liquidity;
 		double c_s = std::max(q_y, q_n) + liquidity * std::log1p(std::exp(x));
 
 		return CREDITS_PER_SHARE * c_s;
+	}
+
+	double LMSR::cost() const {
+		return cost(yes_share_units, no_share_units);
 	}
 }
 

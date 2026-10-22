@@ -4,28 +4,14 @@
 #include <cmath>
 #include <algorithm>
 #include <limits>
+#include <format>
 
 namespace lmsr {
 
-std::int64_t LMSR::to_credit_units(double r_credits, double (*f)(double)) {
-	double r_units = UNITS_PER_CREDIT * r_credits;
-
-	if (std::isless(r_units, 0.0))
-		throw std::invalid_argument("The amount of units must be non-negative");
-	if (!std::isfinite(r_units))
-		throw std::invalid_argument("The amount of units must be finite");
-
-	const double max_int64 = std::ldexp(1.0, 63);
-	if (f(r_units) > max_int64)
-		throw std::overflow_error("Rounded units exceed int64_t range");
-
-	return static_cast<int64_t>(f(r_units));
-}
-
 LMSR::LMSR(double liquidity) : yes_units(0), no_units(0), 
 liquidity(liquidity) {
-	if (!std::isgreater(liquidity, 0.0))
-		throw std::invalid_argument("Liquidity must be positive");
+	if (std::isless(liquidity, MIN_LIQUIDITY))
+		throw std::invalid_argument(std::format("Liquidity must be at least {}", MIN_LIQUIDITY));
 
 	if (!std::isfinite(liquidity))
 		throw std::invalid_argument("Liquidity must be finite");
@@ -33,23 +19,43 @@ liquidity(liquidity) {
 
 LMSR::LMSR() : LMSR(DEFAULT_LIQUIDITY) {}
 
-double LMSR::price(Outcome outcome) const {
+std::int64_t LMSR::to_credit_units(double r_credits, double (*f)(double)) {
+	if (std::isless(r_credits, 0.0))
+		throw std::invalid_argument("The amount of unrounded credits must be non-negative");
+	if (!std::isfinite(r_credits))
+		throw std::invalid_argument("The amount of unrounded credits must be finite");
+
+	double r_units = UNITS_PER_CREDIT * r_credits;
+
+	if (!std::isfinite(r_units))
+		throw std::overflow_error("Unrounded credit units exceed double range");
+
+	double f_units = f(r_units);
+
+	const double max_int64 = std::ldexp(1.0, 63);
+	if (!std::isless(f_units, max_int64))
+		throw std::overflow_error("Rounded units exceed int64_t range");
+
+	return static_cast<std::int64_t>(f_units);
+}
+
+double LMSR::probability(Outcome outcome) const {
 	double q_y = static_cast<double>(yes_units) / UNITS_PER_SHARE;
 	double q_n = static_cast<double>(no_units) / UNITS_PER_SHARE;
 
 	double x = (q_y - q_n) / liquidity;
-	double p_y;
 
+	if (outcome == Outcome::No)
+		x = -x;
+
+	double p;
 	if (std::isgreater(x, 0.0)) {
-		p_y = 1.0 / (1.0 + std::exp(-x));
+		p = 1.0 / (1.0 + std::exp(-x));
 	} else {
-		p_y = std::exp(x) / (std::exp(x) + 1.0);
+		p = std::exp(x) / (std::exp(x) + 1.0);
 	}
 
-	if (outcome == Outcome::Yes)
-		return to_credit_units(CREDITS_PER_SHARE * p_y);
-	else
-		return to_credit_units(CREDITS_PER_SHARE * (1 - p_y));
+	return p;
 }
 
 double LMSR::cost(std::int64_t y_units, std::int64_t n_units) const {
@@ -75,15 +81,34 @@ std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t quantity) const {
 	if (quantity <= 0)
 		throw std::invalid_argument("The amount of share units must be positive");
 
-	int64_t y_units = yes_units, n_units = no_units;
-	int64_t& ref_units = (outcome == Outcome::Yes ? y_units : n_units);
+	double p = probability(outcome);
 
-	if (quantity > std::numeric_limits<std::int64_t>::max() - ref_units)
-		throw std::overflow_error("Share units overflow");
+	double a = static_cast<double>(quantity) / UNITS_PER_SHARE;
+	double t = a / liquidity;
 
-	ref_units += quantity;
+	double c_s, delta_c;
 
-	double delta_c = cost(y_units, n_units) - cost();
+	if (std::isless(t, 1.0)) {
+		c_s = liquidity * std::log1p(p * std::expm1(t));
+		delta_c = CREDITS_PER_SHARE * c_s;
+
+		return to_credit_units(delta_c, std::ceil);
+	}
+
+	double q_y = static_cast<double>(yes_units) / UNITS_PER_SHARE;
+	double q_n = static_cast<double>(no_units) / UNITS_PER_SHARE;
+
+	double x = (q_y - q_n) / liquidity;
+	if (outcome == Outcome::No)
+		x = -x;
+
+	double epsilon = std::log1p(std::exp(-std::abs(x)));
+	double log_p = -std::max(-x, 0.0) - epsilon, log1mp = -std::max(x, 0.0) - epsilon;
+
+	double u = log_p + t, v = log1mp;
+	c_s = liquidity * (std::max(u, v) + std::log1p(std::exp(-std::abs(u - v))));
+
+	delta_c = CREDITS_PER_SHARE * c_s;
 
 	return to_credit_units(delta_c, std::ceil);
 }

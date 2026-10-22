@@ -29,6 +29,8 @@ public:
 	double probability(Outcome outcome) const;
 	double cost(std::int64_t y_units, std::int64_t n_units) const;
 	double cost() const;
+
 	std::int64_t quote_buy(Outcome outcome, std::int64_t share_units) const;
+	void add(Outcome outcome, std::int64_t share_units);
 };
 }

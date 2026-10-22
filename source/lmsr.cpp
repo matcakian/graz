@@ -19,24 +19,24 @@ liquidity(liquidity) {
 
 LMSR::LMSR() : LMSR(DEFAULT_LIQUIDITY) {}
 
-std::int64_t LMSR::to_credit_units(double r_credits, double (*f)(double)) {
-	if (std::isless(r_credits, 0.0))
+std::int64_t LMSR::to_credit_units(double raw_credits, double (*round_function)(double)) {
+	if (std::isless(raw_credits, 0.0))
 		throw std::invalid_argument("The amount of unrounded credits must be non-negative");
-	if (!std::isfinite(r_credits))
+	if (!std::isfinite(raw_credits))
 		throw std::invalid_argument("The amount of unrounded credits must be finite");
 
-	double r_units = UNITS_PER_CREDIT * r_credits;
+	double raw_units = UNITS_PER_CREDIT * r_credits;
 
-	if (!std::isfinite(r_units))
+	if (!std::isfinite(raw_units))
 		throw std::overflow_error("Unrounded credit units exceed double range");
 
-	double f_units = f(r_units);
+	double rounded_units = round_function(r_units);
 
 	const double max_int64 = std::ldexp(1.0, 63);
-	if (!std::isless(f_units, max_int64))
+	if (!std::isless(rounded_units, max_int64))
 		throw std::overflow_error("Rounded units exceed int64_t range");
 
-	return static_cast<std::int64_t>(f_units);
+	return static_cast<std::int64_t>(rounded_units);
 }
 
 double LMSR::liquidity() const {
@@ -81,13 +81,13 @@ double LMSR::cost() const {
 	return cost(yes_units, no_units);
 }
 
-std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t quantity) const {
+std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t share_units) const {
 	if (quantity <= 0)
 		throw std::invalid_argument("The amount of share units must be positive");
 
 	double p = probability(outcome);
 
-	double a = static_cast<double>(quantity) / UNITS_PER_SHARE;
+	double a = static_cast<double>(share_units) / UNITS_PER_SHARE;
 	double t = a / liquidity;
 
 	double c_s, delta_c;
@@ -116,5 +116,16 @@ std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t quantity) const {
 
 	return to_credit_units(delta_c, std::ceil);
 }
+
+void LMSR::add(Outcome outcome, std::int64_t share_units) {
+	std::int64_t y_units = yes_units, n_units = no_units;
+	std::int64_t& ref_untis = (outcome == Outcome::Yes ? y_units : n_units);
+
+	if (share_units > std::numeric_limits<std::int64_t>::max() - ref_untis)
+		throw std::overflow_error("Share units overflow int64_t range");
+
+	ref_untis += share_units;
+} 
+
 }
 

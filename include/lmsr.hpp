@@ -13,7 +13,7 @@ private:
 	std::int64_t yes_units;
 	std::int64_t no_units;
 
-	double liquidity;
+	double liquidity_;
 
 	static std::int64_t to_credit_units(double raw_credits, double (*f)(double));
 

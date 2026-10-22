@@ -39,6 +39,10 @@ std::int64_t LMSR::to_credit_units(double r_credits, double (*f)(double)) {
 	return static_cast<std::int64_t>(f_units);
 }
 
+double LMSR::liquidity() const {
+	return liquidity;
+}
+
 double LMSR::probability(Outcome outcome) const {
 	double q_y = static_cast<double>(yes_units) / UNITS_PER_SHARE;
 	double q_n = static_cast<double>(no_units) / UNITS_PER_SHARE;

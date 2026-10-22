@@ -25,6 +25,7 @@ public:
 	explicit LMSR(double liquidity);
 	LMSR();
 
+	double liquidity() const;
 	double probability(Outcome outcome) const;
 	double cost(std::int64_t y_units, std::int64_t n_units) const;
 	double cost() const;

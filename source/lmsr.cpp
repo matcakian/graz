@@ -1,4 +1,4 @@
-#include "include/lmsr.hpp"
+#include "lmsr.hpp"
 
 #include <stdexcept>
 #include <cmath>

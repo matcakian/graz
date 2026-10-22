@@ -10,8 +10,8 @@ private:
 	static constexpr double DEFAULT_LIQUIDITY = 100.0;
 	static constexpr double MIN_LIQUIDITY = 1.0;
 
-	std::int64_t yes_units;
-	std::int64_t no_units;
+	std::int64_t yes_units_;
+	std::int64_t no_units_;
 
 	double liquidity_;
 
@@ -24,6 +24,8 @@ public:
 
 	explicit LMSR(double liquidity);
 	LMSR();
+
+	std::int64_t share_units(Outcome outcome) const;
 
 	double liquidity() const;
 	double probability(Outcome outcome) const;

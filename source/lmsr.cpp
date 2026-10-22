@@ -8,7 +8,7 @@
 
 namespace lmsr {
 
-LMSR::LMSR(double liquidity) : yes_units(0), no_units(0), 
+LMSR::LMSR(double liquidity) : yes_units_(0), no_units_(0), 
 liquidity_(liquidity) {
 	if (std::isless(liquidity, MIN_LIQUIDITY))
 		throw std::invalid_argument(std::format("Liquidity must be at least {}", MIN_LIQUIDITY));
@@ -39,13 +39,17 @@ std::int64_t LMSR::to_credit_units(double raw_credits, double (*round_function)(
 	return static_cast<std::int64_t>(rounded_units);
 }
 
+std::int64_t LMSR::share_units(Outcome outcome) const {
+	return (outcome == Outcome::Yes ? yes_units_ : no_units_);
+}
+
 double LMSR::liquidity() const {
 	return liquidity_;
 }
 
 double LMSR::probability(Outcome outcome) const {
-	double q_y = static_cast<double>(yes_units) / UNITS_PER_SHARE;
-	double q_n = static_cast<double>(no_units) / UNITS_PER_SHARE;
+	double q_y = static_cast<double>(yes_units_) / UNITS_PER_SHARE;
+	double q_n = static_cast<double>(no_units_) / UNITS_PER_SHARE;
 
 	double x = (q_y - q_n) / liquidity_;
 
@@ -78,7 +82,7 @@ double LMSR::cost(std::int64_t y_units, std::int64_t n_units) const {
 }
 
 double LMSR::cost() const {
-	return cost(yes_units, no_units);
+	return cost(yes_units_, no_units_);
 }
 
 std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t share_units) const {
@@ -99,8 +103,8 @@ std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t share_units) const {
 		return to_credit_units(delta_c, std::ceil);
 	}
 
-	double q_y = static_cast<double>(yes_units) / UNITS_PER_SHARE;
-	double q_n = static_cast<double>(no_units) / UNITS_PER_SHARE;
+	double q_y = static_cast<double>(yes_units_) / UNITS_PER_SHARE;
+	double q_n = static_cast<double>(no_units_) / UNITS_PER_SHARE;
 
 	double x = (q_y - q_n) / liquidity_;
 	if (outcome == Outcome::No)
@@ -118,7 +122,7 @@ std::int64_t LMSR::quote_buy(Outcome outcome, std::int64_t share_units) const {
 }
 
 void LMSR::add(Outcome outcome, std::int64_t share_units) {
-	std::int64_t y_units = yes_units, n_units = no_units;
+	std::int64_t y_units = yes_units_, n_units = no_units_;
 	std::int64_t& ref_untis = (outcome == Outcome::Yes ? y_units : n_units);
 
 	if (share_units > std::numeric_limits<std::int64_t>::max() - ref_untis)

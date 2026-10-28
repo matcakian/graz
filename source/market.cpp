@@ -3,6 +3,8 @@
 #include <cstdint>
 #include <stdexcept>
 #include <limits>
+#include <format>
+#include <string>
 
 namespace market {
 	MarketState::MarketState(std::int64_t y_units, std::int64_t n_units) :
@@ -31,4 +33,16 @@ namespace market {
 		r_units += share_units;
 		return true;
 	}
+
+	LMSR::LMSR(double liquidity) : liquidity_(liquidity) {
+		if (std::isless(liquidity, 0.0))
+			throw std::invalid_argument("Liquidity must be positive");
+
+		if (std::isless(liquidity, MIN_LIQUIDITY))
+			throw std::invalid_argument(
+				std::format("Liquidity must be at least {:.1f}", MIN_LIQUIDITY));
+	}
+
+	LMSR::LMSR() : LMSR(DEFAULUT_LIQUIDITY) {}
 }
+

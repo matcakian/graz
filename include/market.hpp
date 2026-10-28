@@ -27,6 +27,9 @@ public:
 
 class LMSR {
 private:
+	static constexpr double DEFAULT_LIQUIDITY = 100.0;
+	static constexpr double MIN_LIQUIDITY = 1.0;
+
 	double liquidity_;
 
 public:

@@ -11,4 +11,11 @@ namespace market {
 	}
 
 	MarketState::MarketState() : MarketState(0, 0) {}
+
+	double MarketState::quantity(Outcome outcome) const {
+		// referenced units
+		const int64_t& r_units = (outcome == Outcome::Yes ? y_units_ : n_units_);
+
+		return static_cast<double>(r_units) / UNITS_PER_SHARE;
+	}
 }

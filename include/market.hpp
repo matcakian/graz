@@ -2,7 +2,7 @@
 
 #include <cstdint>
 
-namespace lmsr {
+namespace market {
 constexpr std::int64_t UNITS_PER_SHARE = 1000;
 constexpr std::int64_t UNITS_PER_CREDIT = 1000;
 
@@ -17,11 +17,15 @@ private:
 public:
 	explicit MarketState(std::int64_t y_units, std::int64_t n_units);
 	MarketState();
+
+	// the amount of shares of a certain outcome in the market
+	[[nodiscard]] double quantity(Outcome outcome) const;
+
+	void add(std::int64_t share_units, Outcome outcome);
 }
 
 class LMSR {
 private:
-	MarketState state;
 	double liquidity_;
 
 public:
@@ -29,8 +33,10 @@ public:
 	LMSR();
 
 	[[nodiscard]] double liquidity() const;
+	[[nodiscard]] double probability(const MarketState& state, Outcome outcome) const;
+	
+	[[nodiscard]] std::int64_t quote_buy(const MarketState& state, 
+		Outcome outcome, std::int64_t share_units) const;
+}
+}
 
-	[[nodiscard]] double probability(Outcome outcome) const;
-	[[nodiscard]] std::int64_t quote_buy(std::int64_t share_units, Outcome outcome) const;
-}
-}

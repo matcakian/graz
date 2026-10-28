@@ -48,5 +48,22 @@ namespace market {
 	double LMSR::liquidity() const {
 		return liquidity_;
 	}
+
+	double LMSR::probability(const MarketState& state, Outcome outcome) const {
+		double q_y = state.quantity(Outcome::Yes);
+		double q_n = state.quantity(Outcome::No);
+		double b = liquidity_;
+
+		double x = (q_y - q_n) / b;
+		if (outcome == Outcome::No) x = -x;
+
+		double result;
+		if (std::isless(x, 0.0))
+			result = std::exp(x) / (std::exp(x) + 1.0);
+		else
+			result = 1.0 / (1.0 + std::exp(-x));
+
+		return result;
+	}
 }
 

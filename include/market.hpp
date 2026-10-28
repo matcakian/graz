@@ -22,7 +22,7 @@ public:
 	// the amount of shares of a certain outcome in the market
 	[[nodiscard]] double quantity(Outcome outcome) const;
 
-	bool add(Outcome outcome, std::int64_t share_units);
+	[[nodiscard]] bool add(Outcome outcome, std::int64_t share_units);
 };
 
 class LMSR {

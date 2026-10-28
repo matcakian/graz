@@ -7,6 +7,9 @@ namespace market {
 constexpr std::int64_t UNITS_PER_SHARE = 1000;
 constexpr std::int64_t UNITS_PER_CREDIT = 1000;
 
+// rounds raw credits to credit units
+std::int64_t to_credit_units(double r_credits, double (*f)(double));
+
 enum class Outcome {Yes, No};
 
 class MarketState {

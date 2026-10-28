@@ -26,8 +26,8 @@ namespace market {
 		// referenced units
 		int64_t& r_units = (outcome == Outcome::Yes ? y_units_ : n_units_);
 
-		constexpr std::int64_t MAX_INT64 = std::numeric_limits<std::int64_t>::max();
-		if (share_units > MAX_INT64 - r_units)
+		constexpr std::int64_t MAX = std::numeric_limits<std::int64_t>::max();
+		if (share_units > MAX - r_units)
 			return false;
 
 		r_units += share_units;
@@ -62,6 +62,23 @@ namespace market {
 			result = std::exp(x) / (std::exp(x) + 1.0);
 		else
 			result = 1.0 / (1.0 + std::exp(-x));
+
+		return result;
+	}
+
+	std::int64_t to_credit_units(double r_credits, double (*f)(double)) {
+		if (std::isnan(r_credits)) 
+			throw std::invalid_argument("Raw credits must not be NAN");
+
+		double r_units = r_credits * UNITS_PER_CREDIT; // raw units
+		if (!std::isfinite(r_units))
+			throw std::overflow_error("Raw units overflow double range");
+
+		double result = f(r_units);
+
+		constexpr double MAX = static_cast<double>(std::numeric_limits<std::int64_t>::max());
+		if (std::isgreater(result, MAX))
+			throw std::overflow_error("Rounded units overflow std::int64_t range");
 
 		return result;
 	}

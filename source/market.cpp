@@ -10,7 +10,7 @@ namespace market {
 	MarketState::MarketState(std::int64_t y_units, std::int64_t n_units) :
 	y_units_(y_units), n_units_(n_units) {
 		if (y_units < 0 || n_units < 0)
-			throw std::invalid_argument("Share units must be positive");
+			throw std::invalid_argument("Share units must be non-negative");
 	}
 
 	MarketState::MarketState() : MarketState(0, 0) {}
@@ -81,6 +81,15 @@ namespace market {
 			throw std::overflow_error("Rounded units overflow std::int64_t range");
 
 		return result;
+	}
+
+	std::int64_t LMSR::quote_buy(const MarketState& state, Outcome outcome,
+		std::int64_t s_units) const {
+		if (s_units <= 0)
+			throw std::invalid_argument("Share units must be positive");
+
+		double d_q = static_cast<double>(s_units);
+		return to_credit_units(cost_difference(state, outcome, d_q), std::ceil);
 	}
 }
 

@@ -22,10 +22,11 @@ public:
 	explicit MarketState(std::int64_t y_units, std::int64_t n_units);
 	MarketState();
 
-	// the amount of shares of a certain outcome in the market
+	// returns the amount of shares of a certain outcome in the market
 	[[nodiscard]] double quantity(Outcome outcome) const;
 
-	[[nodiscard]] bool add(Outcome outcome, std::int64_t share_units);
+	// adds share units of a certain outcome
+	[[nodiscard]] bool add(Outcome outcome, std::int64_t s_units);
 };
 
 class LMSR {
@@ -45,8 +46,10 @@ public:
 	[[nodiscard]] double liquidity() const;
 	[[nodiscard]] double probability(const MarketState& state, Outcome outcome) const;
 
+	/* returns the price of buying a certain amount of share units 
+	of a certain outcome, given the market state */
 	[[nodiscard]] std::int64_t quote_buy(const MarketState& state, 
-		Outcome outcome, std::int64_t share_units) const;
+		Outcome outcome, std::int64_t s_units) const;
 };
 }
 

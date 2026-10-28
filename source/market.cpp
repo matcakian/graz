@@ -22,15 +22,15 @@ namespace market {
 		return static_cast<double>(r_units) / UNITS_PER_SHARE;
 	}
 
-	bool MarketState::add(Outcome outcome, std::int64_t share_units) {
+	bool MarketState::add(Outcome outcome, std::int64_t s_units) {
 		// referenced units
 		int64_t& r_units = (outcome == Outcome::Yes ? y_units_ : n_units_);
 
 		constexpr std::int64_t MAX = std::numeric_limits<std::int64_t>::max();
-		if (share_units > MAX - r_units)
+		if (s_units > MAX - r_units)
 			return false;
 
-		r_units += share_units;
+		r_units += s_units;
 		return true;
 	}
 

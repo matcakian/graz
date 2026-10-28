@@ -43,6 +43,10 @@ namespace market {
 				std::format("Liquidity must be at least {:.1f}", MIN_LIQUIDITY));
 	}
 
-	LMSR::LMSR() : LMSR(DEFAULUT_LIQUIDITY) {}
+	LMSR::LMSR() : LMSR(DEFAULT_LIQUIDITY) {}
+
+	double LMSR::liquidity() const {
+		return liquidity_;
+	}
 }
 

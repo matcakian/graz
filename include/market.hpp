@@ -3,6 +3,7 @@
 #include <cstdint>
 
 namespace market {
+/* The payout of one share is one credit */
 constexpr std::int64_t UNITS_PER_SHARE = 1000;
 constexpr std::int64_t UNITS_PER_CREDIT = 1000;
 
@@ -22,7 +23,7 @@ public:
 	[[nodiscard]] double quantity(Outcome outcome) const;
 
 	void add(std::int64_t share_units, Outcome outcome);
-}
+};
 
 class LMSR {
 private:
@@ -34,9 +35,9 @@ public:
 
 	[[nodiscard]] double liquidity() const;
 	[[nodiscard]] double probability(const MarketState& state, Outcome outcome) const;
-	
+
 	[[nodiscard]] std::int64_t quote_buy(const MarketState& state, 
 		Outcome outcome, std::int64_t share_units) const;
-}
+};
 }
 

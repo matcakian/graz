@@ -24,7 +24,7 @@ namespace market {
 		// referenced units
 		int64_t& r_units = (outcome == Outcome::Yes ? y_units_ : n_units_);
 
-		constexpr std::int64_t MAX_INT64 = numeric_limits<std::int64_t>::max();
+		constexpr std::int64_t MAX_INT64 = std::numeric_limits<std::int64_t>::max();
 		if (share_units > MAX_INT64 - r_units)
 			return false;
 

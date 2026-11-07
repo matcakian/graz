@@ -105,9 +105,5 @@ Bound operator/(Bound numerator, Bound denominator) const {
 
 	return {std::nextafter(lower, -INF), std::nextafter(upper, INF)};
 }
-
-// Bound cost_difference(const MarketState& state, Outcome outcome, std::int64_t s_units) {
-	
-// }
 }
 }

@@ -92,18 +92,45 @@ struct Bound {
 	}
 };
 
-Bound operator/(Bound numerator, Bound denominator) const {
-	assert(std::isless(denominator.upper, 0.0) || 
-		std::isgreater(denominator.lower, 0.0));
+Bound operator/(Bound a, Bound b) {
+	assert(std::isless(b.upper, 0.0) || 
+		std::isgreater(b.lower, 0.0));
 
 	const auto [lower, upper] = std::minmax({
-		numerator.lower / denominator.lower;
-		numerator.lower / denominator.upper;
-		numerator.upper / denominator.lower;
-		numerator.upper / denominator.upper;
+		a.lower / b.lower;
+		a.lower / b.upper;
+		a.upper / b.lower;
+		a.upper / b.upper;
 	});
 
 	return {std::nextafter(lower, -INF), std::nextafter(upper, INF)};
 }
+
+Bound operator-(Bound a, Bound b) {
+	double lower = a.lower - b.upper;
+	double upper = a.upper - b.lower;
+	return {std::nextafter(lower, -INF), std::nextafter(upper, INF)};
+}
+
+Bound p(Bound x) {}
+Bound f(Bound t, Bound x, Bound b) {}
+Bound g(Bound t, Bound x, Bound b) {}
+}
+
+double LMSR::cost_difference(const MarketState& state, Outcome outcome,
+	std::int64_t s_units) const {
+
+	Bound d_q = Bound(s_units) / Bound(UNITS_PER_SHARE);
+	Bound b = Bound(liquidity_);
+	Bound t = d_q / b;
+	Bound q_1 = Bound(state.quantity(outcome)) / Bound(UNITS_PER_SHARE);
+	Bound q_2 = Bound(state.quantity(!outcome)) / Bound(UNITS_PER_SHARE);
+	Bound x = (q_1 - q_2) / b;
+
+	constexpr double CROSSOVER_T = 200.0;
+	if (std::isless(t, CROSSOVER_T))
+		return f(t, x, b).upper;
+	else
+		return g(t, x, b).upper;
 }
 }

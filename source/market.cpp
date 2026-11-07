@@ -24,8 +24,8 @@ void MarketState::add(Outcome outcome, std::int64_t s_units) {
 	if (s_units < 0)
 		throw std::invalid_argument("The number of share units must be positive");
 
-	constexpr std::int64_t max_int64 = std::numeric_limits<std::int64_t>::max();
-	if (s_units > max_int64 - quantity(outcome))
+	constexpr std::int64_t MAX_INT64 = std::numeric_limits<std::int64_t>::max();
+	if (s_units > MAX_INT64 - quantity(outcome))
 		throw std::overflow_error("The number of share units overflows std::int64_t range");
 
 	if (outcome == Outcome::Yes) y_units_ += s_units;
@@ -69,12 +69,45 @@ double LMSR::probability(const MarketState& state, Outcome outcome) const {
 }
 
 namespace {
+constexpr double INF = std::numeric_limits<double>::infinity();
+
 struct Bound {
 	double lower, upper;
 
 	Bound(double lower, double upper) : lower(lower), upper(upper) {
+		assert(std::isfinite(lower) && std::isfinite(upper));
 		assert(std::isgreaterequal(upper, lower));
 	}
+
+	Bound(std::int64_t value) {
+		double d_value = static_cast<double>(value);
+		this.lower = std::nextafter(d_value, -INF);
+		this.upper = std::nextafter(d_value, INF);
+	}
+
+	Bound(double value) {
+		assert(std::isfinite(value));
+		this.lower = value;
+		this.upper = value;
+	}
 };
+
+Bound operator/(Bound numerator, Bound denominator) const {
+	assert(std::isless(denominator.upper, 0.0) || 
+		std::isgreater(denominator.lower, 0.0));
+
+	const auto [lower, upper] = std::minmax({
+		numerator.lower / denominator.lower;
+		numerator.lower / denominator.upper;
+		numerator.upper / denominator.lower;
+		numerator.upper / denominator.upper;
+	});
+
+	return {std::nextafter(lower, -INF), std::nextafter(upper, INF)};
+}
+
+// Bound cost_difference(const MarketState& state, Outcome outcome, std::int64_t s_units) {
+	
+// }
 }
 }

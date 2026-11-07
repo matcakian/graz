@@ -67,4 +67,14 @@ double LMSR::probability(const MarketState& state, Outcome outcome) const {
 
 	return result;
 }
+
+namespace {
+struct Bound {
+	double lower, upper;
+
+	Bound(double lower, double upper) : lower(lower), upper(upper) {
+		assert(std::isgreaterequal(upper, lower));
+	}
+};
+}
 }

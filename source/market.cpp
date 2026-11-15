@@ -7,29 +7,30 @@
 #include <cassert>
 
 namespace market {
-MarketState::MarketState(std::int64_t y_units, std::int64_t n_units) :
-y_units_(y_units), n_units_(n_units) {
-	if (y_units < 0 || n_units < 0)
-		throw std::invalid_argument("The number of share units must be non-negative");
+
+MarketState::MarketState(std::int64_t y_shares, std::int64_t n_shares) :
+y_shares_(y_shares), n_shares_(n_shares) {
+	if (y_shares < 0 || n_shares < 0)
+		throw std::invalid_argument("The number of shares must be non-negative");
 }
 
 MarketState::MarketState() : MarketState(0, 0) {}
 
 std::int64_t MarketState::quantity(Outcome outcome) const {
-	return (outcome == Outcome::Yes ? y_units_ : n_units_);
+	return (outcome == Outcome::Yes ? y_shares_ : n_shares_);
 }
 
 /* adds share units of a certain outcome to the market */
-void MarketState::add(Outcome outcome, std::int64_t s_units) {
-	if (s_units < 0)
-		throw std::invalid_argument("The number of share units must be positive");
+void MarketState::add(Outcome outcome, std::int64_t shares) {
+	if (shares < 0)
+		throw std::invalid_argument("The number of shares must be positive");
 
-	constexpr std::int64_t max_int64 = std::numeric_limits<std::int64_t>::max();
-	if (s_units > max_int64 - quantity(outcome))
-		throw std::overflow_error("The number of share units overflows std::int64_t range");
+	constexpr std::int64_t MAX_INT64 = std::numeric_limits<std::int64_t>::max();
+	if (shares > MAX_INT64 - quantity(outcome))
+		throw std::overflow_error("The number of shares overflows std::int64_t range");
 
-	if (outcome == Outcome::Yes) y_units_ += s_units;
-	else n_units_ += s_units;
+	if (outcome == Outcome::Yes) y_shares_ += shares;
+	else n_shares_ += shares;
 }
 
 LMSR::LMSR(double liquidity) : liquidity_(liquidity) {
@@ -54,17 +55,14 @@ double LMSR::liquidity() const {
 }
 
 double LMSR::probability(const MarketState& state, Outcome outcome) const {
-	double q_1 = static_cast<double>(state.quantity(outcome)) / UNITS_PER_SHARE;
-	double q_2 = static_cast<double>(state.quantity(!outcome)) / UNITS_PER_SHARE;
-
-	double x = (q_1 - q_2) / liquidity_;
-
-	double result;
+	const double x = static_cast<double>(state.quantity(outcome)
+		- state.quantity(!outcome)) / liquidity_;
+	
 	if (std::isless(x, 0.0))
-		result = std::exp(x) / (std::exp(x) + 1.0);
+		return std::exp(x) / (std::exp(x) + 1.0);
 	else
-		result = 1.0 / (1.0 + std::exp(-x));
+		return 1.0 / (1.0 + std::exp(-x));
+}
 
-	return result;
-}
-}
+} // namespace market
+

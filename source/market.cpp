@@ -20,11 +20,11 @@ std::int64_t MarketState::quantity(Outcome outcome) const {
 	return (outcome == Outcome::Yes ? y_shares_ : n_shares_);
 }
 
-/* adds share units of a certain outcome to the market */
 void MarketState::add(Outcome outcome, std::int64_t shares) {
 	if (shares < 0)
 		throw std::invalid_argument("The number of shares must be positive");
 
+	// Check the remaining capacity before adding to avoid signed overflow.
 	constexpr std::int64_t MAX_INT64 = std::numeric_limits<std::int64_t>::max();
 	if (shares > MAX_INT64 - quantity(outcome))
 		throw std::overflow_error("The number of shares overflows std::int64_t range");
@@ -55,9 +55,11 @@ double LMSR::liquidity() const {
 }
 
 double LMSR::probability(const MarketState& state, Outcome outcome) const {
+	// Subtract as integers to preserve small share gaps when computing log-odds.
 	const double x = static_cast<double>(state.quantity(outcome)
 		- state.quantity(!outcome)) / liquidity_;
 	
+	// Use a nonpositive exponent in both forms to avoid overflow.
 	if (std::isless(x, 0.0))
 		return std::exp(x) / (std::exp(x) + 1.0);
 	else

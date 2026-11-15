@@ -2,10 +2,10 @@
 
 #include <cstdint>
 
+
+/* the payout of one share is one credit */
+
 namespace market {
-/* The payout of one share is one credit */
-constexpr std::int64_t UNITS_PER_SHARE = 1000;
-constexpr std::int64_t UNITS_PER_CREDIT = 1000;
 
 enum class Outcome {Yes, No};
 constexpr Outcome operator!(Outcome outcome) {
@@ -14,19 +14,19 @@ constexpr Outcome operator!(Outcome outcome) {
 
 class MarketState {
 private:
-	/* the amount of share units of each outcome in the market */
-	std::int64_t y_units_;
-	std::int64_t n_units_;
+	/* the amount of shares of each outcome in the market */
+	std::int64_t y_shares_;
+	std::int64_t n_shares_;
 
 public:
-	explicit MarketState(std::int64_t y_units, std::int64_t n_units);
+	explicit MarketState(std::int64_t y_shares, std::int64_t n_shares);
 	MarketState();
 
-	/* returns the amount of share units of a certain outcome in the market */
+	/* returns the amount of shares of a certain outcome in the market */
 	[[nodiscard]] std::int64_t quantity(Outcome outcome) const;
 
-	/* adds share units of a certain outcome to the market */
-	void add(Outcome outcome, std::int64_t s_units);
+	/* adds shares of a certain outcome to the market */
+	void add(Outcome outcome, std::int64_t shares);
 };
 
 class LMSR {
@@ -43,10 +43,11 @@ public:
 	[[nodiscard]] double liquidity() const;
 	[[nodiscard]] double probability(const MarketState& state, Outcome outcome) const;
 
-	/* returns the price of buying a certain amount of share units 
-	of a certain outcome, given the market state */
+	/* returns the price of buying a certain amount of shares of a certain outcome, 
+	given the market state */
 	[[nodiscard]] std::int64_t quote_buy(const MarketState& state, 
-		Outcome outcome, std::int64_t s_units) const;
+		Outcome outcome, std::int64_t shares) const;
 };
+
 }
 

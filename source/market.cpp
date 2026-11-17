@@ -231,11 +231,8 @@ double LMSR::cost_difference(const MarketState& state, Outcome outcome,
 			return g_b(Bound(t), x_b, b_b);
 	};
 
-	// Round the payout cap outward to cover conversion to double.
-	const double max_cost = std::nextafter(static_cast<double>(shares), INF);
-
 	// Check both endpoints because the trade-size interval can cross the formula cutoff.
-	return std::min(std::max(at(t_b.lower).upper, at(t_b.upper).upper), max_cost);
+	return std::max(at(t_b.lower).upper, at(t_b.upper).upper);
 }
 
 std::int64_t LMSR::quote_buy(const MarketState& state, Outcome outcome,
@@ -253,7 +250,8 @@ std::int64_t LMSR::quote_buy(const MarketState& state, Outcome outcome,
 	if (!std::islessequal(cost, MAX_INT64_D))
 		return shares;
 
-	return static_cast<std::int64_t>(cost);
+	// The price of shares can't be bigger than the payout cap of those shares.
+	return std::min(static_cast<std::int64_t>(cost), shares);
 }
 
 } // namespace market

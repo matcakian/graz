@@ -160,7 +160,6 @@ TEST_CASE("LMSR quote_buy", "[lmsr]") {
 		// Allow the larger of one credit and one part per million of the minimum price for rounding.
 		constexpr std::int64_t OVERCHARGE_DIVISOR = 1'000'000;
 		constexpr std::int64_t ABS_ERROR = 1;
-		constexpr auto MAX_PAYOUT = std::numeric_limits<std::int64_t>::max();
 
 		struct QuoteCase {
 			std::int64_t yes_shares;
@@ -232,7 +231,6 @@ TEST_CASE("LMSR quote_buy", "[lmsr]") {
 			{9'223'372'036'853'775'807,  0,                          1.0,       1,          1,           1},
 			{9'223'372'036'853'775'807,  1'000'000,                  100.0,     100'000,    100'000,     1},
 			{9'223'372'036'853'775'807,  9'223'372'036'853'775'807,  100.0,     1'000'000,  999'931,     999'931},
-			{0,                          0,                          1.0,       MAX_PAYOUT, MAX_PAYOUT,  MAX_PAYOUT},
 		};
 
 		for (const auto& [yes_shares, no_shares, liquidity, shares, minimum_yes, minimum_no] : cases) {

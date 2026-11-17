@@ -36,6 +36,9 @@ private:
 
 	double liquidity_;
 
+	[[nodiscard]] double cost_difference(const MarketState& state,
+		Outcome outcome, std::int64_t shares) const;
+
 public:
 	explicit LMSR(double liquidity);
 	LMSR();

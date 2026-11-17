@@ -157,7 +157,9 @@ TEST_CASE("LMSR quote_buy", "[lmsr]") {
 	}
 
 	SECTION("Quotes never undercharge and respect the overcharge and payout limits") {
+		// Allow the larger of one credit and one part per million of the minimum price for rounding.
 		constexpr std::int64_t OVERCHARGE_DIVISOR = 1'000'000;
+		constexpr std::int64_t ABS_ERROR = 1;
 		constexpr auto MAX_PAYOUT = std::numeric_limits<std::int64_t>::max();
 
 		struct QuoteCase {
@@ -244,11 +246,11 @@ TEST_CASE("LMSR quote_buy", "[lmsr]") {
 
 				CHECK(yes_quote >= minimum_yes);
 				CHECK(yes_quote <= max_payout);
-				CHECK(yes_quote <= minimum_yes + minimum_yes / OVERCHARGE_DIVISOR);
+				CHECK(yes_quote <= minimum_yes + std::max(minimum_yes / OVERCHARGE_DIVISOR, ABS_ERROR));
 
 				CHECK(no_quote >= minimum_no);
 				CHECK(no_quote <= max_payout);
-				CHECK(no_quote <= minimum_no + minimum_no / OVERCHARGE_DIVISOR);
+				CHECK(no_quote <= minimum_no + std::max(minimum_no / OVERCHARGE_DIVISOR, ABS_ERROR));
 			}
 		}
 	}
